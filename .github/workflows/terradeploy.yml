@@ -38,7 +38,7 @@ jobs:
       - name: Check if DynamoDB table exists
         id: check-table
         run: |
-          aws dynamodb describe-table --table-name visitor_counter --query "Table" --output text || echo "::set-output name=table_exists::false"
+          aws dynamodb describe-table --table-name VisitorCounter --query "Table" --output text || echo "::set-output name=table_exists::false"
 
       - name: Initialize Terraform
         run: |
