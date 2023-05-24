@@ -40,6 +40,16 @@ jobs:
         run: |
           aws dynamodb describe-table --table-name VisitorCounter --query "Table" --output text || echo "::set-output name=table_exists::false"
 
+      - name: Check if API Gateway exists
+        id: check-api
+        run: |
+          aws apigateway get-rest-apis --query "items[?name=='VisitorCounterAPI']" --output text || echo "::set-output name=api_exists::false"
+
+      - name: Check if IAM Role exists
+        id: check-iam-role
+        run: |
+          aws iam get-role --role-name lambda_role --query "Role.RoleName" --output text || echo "::set-output name=iam_role_exists::false"
+
       - name: Initialize Terraform
         run: |
           terraform init
@@ -47,9 +57,14 @@ jobs:
       - name: Create DynamoDB table if it doesn't exist
         if: steps.check-table.outputs.table_exists == 'false'
         run: |
-          terraform apply -auto-approve
+          terraform apply -auto-approve -target=aws_dynamodb_table.visitor_counter
 
-      - name: Plan and Apply Terraform
+      - name: Create API Gateway if it doesn't exist
+        if: steps.check-api.outputs.api_exists == 'false'
         run: |
-          terraform plan -out=tfplan
-          terraform apply tfplan
+          terraform apply -auto-approve -target=aws_api_gateway_rest_api.api_gateway -target=aws_api_gateway_resource.api_resource -target=aws_api_gateway_method.api_method -target=aws_api_gateway_integration.api_integration -target=aws_api_gateway_deployment.api_deployment
+
+      - name: Create IAM Role if it doesn't exist
+        if: steps.check-iam-role.outputs.iam_role_exists == 'false'
+        run: |
+          terraform apply -auto-approve -target=aws_iam_role.lambda_role
