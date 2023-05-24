@@ -5,6 +5,9 @@ import zipfile
 import tempfile
 import importlib.util
 
+# Set the AWS_DEFAULT_REGION environment variable
+os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'
+
 # Create a temporary directory to extract the Lambda function code
 temp_dir = tempfile.mkdtemp()
 
@@ -18,11 +21,6 @@ module_path = os.path.join(temp_dir, 'main.py')
 spec = importlib.util.spec_from_file_location('main', module_path)
 main = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(main)
-
-#import dependencies are available for the Lambda function code to execute properly during testing 
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-table_name = 'VisitorCounter'
-table = dynamodb.Table(table_name)
 
 # Run the test on the Lambda function code
 def test_lambda_handler():
