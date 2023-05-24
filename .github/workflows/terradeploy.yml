@@ -35,9 +35,19 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
 
+      - name: Check if DynamoDB table exists
+        id: check-table
+        run: |
+          aws dynamodb describe-table --table-name visitor_counter --query "Table" --output text || echo "::set-output name=table_exists::false"
+
       - name: Initialize Terraform
         run: |
           terraform init
+
+      - name: Create DynamoDB table if it doesn't exist
+        if: steps.check-table.outputs.table_exists == 'false'
+        run: |
+          terraform apply -auto-approve
 
       - name: Plan and Apply Terraform
         run: |
