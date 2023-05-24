@@ -44,6 +44,3 @@ jobs:
         run: |
           terraform plan -out=tfplan
           terraform apply tfplan
-=======
-
->>>>>>> 2713842bcb7cecb54ee9f4202225800dc7f22ddd
